@@ -537,6 +537,7 @@ public class Player : NSObject, AVAudioPlayerDelegate {
             } else {
                 item = SlowMoPlayerItem(url: url)
             }
+            item.audioTimePitchAlgorithm = AVAudioTimePitchAlgorithm.timeDomain
             self.player = AVQueuePlayer(playerItem: item)
             
             
