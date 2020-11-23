@@ -102,6 +102,7 @@ public class Player : NSObject, AVAudioPlayerDelegate {
     let channel: FlutterMethodChannel
     let registrar: FlutterPluginRegistrar
     var player: AVQueuePlayer?
+    var currentStatus: AVPlayerItem.Status?
     
     var observerStatus: [NSKeyValueObservation] = []
     
@@ -569,6 +570,13 @@ public class Player : NSObject, AVAudioPlayerDelegate {
             self.isLiveStream = false
             observerStatus.append( item.observe(\.status, changeHandler: { [weak self] (item, value) in
                 
+                //don't execute reayToPlay again when coming back from foreground to avoid re-playing of audio due to line #603
+                if(self?.currentStatus != .readyToPlay) {
+                    self?.currentStatus = item.status
+                } else {
+                    return
+                }
+                
                 switch item.status {
                 case .unknown:
                     debugPrint("status: unknown")
@@ -782,6 +790,7 @@ public class Player : NSObject, AVAudioPlayerDelegate {
     }
     
     func stop(){
+        self.currentStatus = nil
         self.player?.pause()
         self.player?.rate = 0.0
         
