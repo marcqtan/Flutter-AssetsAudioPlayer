@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 object ImageDownloader {
 
@@ -54,7 +54,7 @@ object ImageDownloader {
     }
 
     suspend fun getBitmap(context: Context, fileType: String, filePath: String, filePackage: String?): Bitmap = withContext(Dispatchers.IO) {
-        suspendCoroutine<Bitmap> { continuation ->
+        suspendCancellableCoroutine<Bitmap> { continuation ->
             try {
                 when (fileType) {
                     "asset" -> {
@@ -136,7 +136,9 @@ object ImageDownloader {
                                             val appInfos = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
                                             val manifestPlaceHolderResource = appInfos.metaData.get(manifestNotificationPlaceHolder) as? Int
                                             if(manifestPlaceHolderResource == null){
-                                                continuation.resumeWithException(Exception("failed to download $filePath"))
+                                                if(continuation.isActive) {
+                                                    continuation.resumeWithException(Exception("failed to download $filePath"))
+                                                }
                                             }else{
                                                 val placeHolder = BitmapFactory.decodeResource(context.resources,manifestPlaceHolderResource)
                                                 continuation.resume(placeHolder)
