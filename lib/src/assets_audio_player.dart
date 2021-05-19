@@ -1027,7 +1027,7 @@ class AssetsAudioPlayer {
 
         await setLoopMode(loopMode);
 
-        await setPlaySpeed(this.playSpeed.value);
+        await setPlaySpeed(playSpeed);
 
         _stopped = false;
         _playlistFinished.value = false;
